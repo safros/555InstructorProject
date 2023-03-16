@@ -15,14 +15,18 @@ import math
 if __name__ == '__main__':
     machineSet=[]
     jobMachineDict={}
+    machineSetTriangular = []
+    jobMachineDictTriangular = {}
     for i in range(1,30):
         numOperations = np.random.normal(5, 0.05, 1)
         numOps=math.floor(numOperations[0])
         for j in range(1,numOps):
             machineSet.append(math.floor(np.random.uniform(1,18,1)[0]))
-            # machineSet.append(np.random.triangular(1,5,18,1))
+            machineSetTriangular.append(math.floor(np.random.triangular(1,5,18,1)))
         jobMachineDict[i]=machineSet
+        jobMachineDictTriangular[i]=machineSetTriangular
         machineSet = []
+        machineSetTriangular = []
 
     G = nx.erdos_renyi_graph(3, 0.88)
     nx.draw(G, with_labels=True)
