@@ -17,16 +17,36 @@ if __name__ == '__main__':
     jobMachineDict={}
     machineSetTriangular = []
     jobMachineDictTriangular = {}
-    for i in range(1,30):
-        numOperations = np.random.normal(5, 0.05, 1)
+    machineSetPref = []
+    jobMachineDictPref = {}
+    numJobs=30
+    for i in range(1,numJobs):
+        numOperations = np.random.normal(5, 0.1, 1)
         numOps=math.floor(numOperations[0])
+        if numOps <=2:
+            numOps=3
         for j in range(1,numOps):
-            machineSet.append(math.floor(np.random.uniform(1,18,1)[0]))
-            machineSetTriangular.append(math.floor(np.random.triangular(1,5,18,1)))
+            uniNum=math.floor(np.random.uniform(1,18,1)[0])
+            triNum=math.floor(np.random.triangular(1,5,18,1))
+            while (uniNum in machineSet):
+                uniNum = math.floor(np.random.uniform(1, 18, 1)[0])
+            machineSet.append(uniNum)
+            while (triNum in machineSetTriangular):
+                triNum = math.floor(np.random.uniform(1, 18, 1)[0])
+            machineSetTriangular.append(triNum)
+            prefNum=np.random.choice(np.arange(1, 19), p=[0.1, 0.1,0.05, 0.05, 0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05])
+            while (prefNum in machineSetPref):
+                prefNum = np.random.choice(np.arange(1, 19),
+                                           p=[0.1, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+                                              0.05, 0.05, 0.05, 0.05, 0.05, 0.05])
+            machineSetPref.append(prefNum)
+
         jobMachineDict[i]=machineSet
         jobMachineDictTriangular[i]=machineSetTriangular
+        jobMachineDictPref[i]=machineSetPref
         machineSet = []
         machineSetTriangular = []
+        machineSetPref = []
 
     G = nx.erdos_renyi_graph(3, 0.88)
     nx.draw(G, with_labels=True)
