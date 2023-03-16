@@ -19,8 +19,7 @@ if __name__ == '__main__':
         numOperations = np.random.normal(5, 0.05, 1)
         numOps=math.floor(numOperations[0])
         for j in range(1,numOps):
-            machineSet.append(np.random.uniform(1,18,1)[0])
-            #machineSet.append(np.random.triangular(1,9,18,1))
+            machineSet.append(math.floor(np.random.uniform(1,18,1)[0]))
             # machineSet.append(np.random.triangular(1,5,18,1))
         jobMachineDict[i]=machineSet
         machineSet = []
@@ -34,3 +33,4 @@ if __name__ == '__main__':
     print(jobMachineDict)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
