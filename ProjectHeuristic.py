@@ -40,10 +40,49 @@ def construction(numBusses, sij, dj, numbusRequiredPerSchool):
             currBusToSchedule += 1
     return busSchedule
 
+def expectedSchedule(busSchedule,pj, dj):
+    for i in range(0,10):
+        busScheduleExpTime = {}
+        #bus number the Cmax and then the Lmax
+        busNumCmaxLmax = []
+        j=0
+        for bus in busSchedule:
+            expTime = []
+            Lmax=0
+            index=busSchedule[bus][0]
+            processingDist=pj[index]
+            x = processingDist.split('-')
+            samplePj1=np.random.uniform(int(x[0]),int(x[1]),1)
+            expTime.append(2*int(samplePj1[0]))
+            busNumCmaxLmax.append(bus)
+            if 2*samplePj1[0]>dj[index]:
+                Lmax+=2*samplePj1[0]-dj[index]
+            tStart=2*samplePj1[0]
+            for h in range(0,len(busSchedule[bus])-1):
+                index = busSchedule[bus][h+1]
+                processingDist = sij[h][h+1]
+                x = processingDist.split('-')
+                samplePj2 = np.random.uniform(int(x[0]), int(x[1]), 1)
+                expTime.append(int(samplePj2[0]))
+                processingDist = pj[h+1]
+                x = processingDist.split('-')
+                samplePj3 = np.random.uniform(int(x[0]), int(x[1]), 1)
+                expTime.append(int(samplePj3[0]))
+                if tStart+samplePj2[0]+samplePj3[0]>dj[index]:
+                    Lmax+=tStart+samplePj2[0]+samplePj3[0]-dj[index]
+                tStart+=samplePj2[0]+samplePj3[0]
+            busScheduleExpTime[j]=expTime
+            completionTime = sum(expTime)
+            busNumCmaxLmax.append(completionTime)
+            busNumCmaxLmax.append(int(Lmax))
+            j+=1
+        print(busScheduleExpTime)
+        print(busNumCmaxLmax)
 
 if __name__ == '__main__':
-    sij = [[9, 22, 20], [16, 10, 35], [20, 35, 6]]
+    sij = [["-", "12-22", "10-20"], ["9-16", "-", "18-35"], ["10-20", "18-35", "-"]]
     dj = [100, 130, 130]
+    pj = ["5-9", "7-10", "4-6"]
     schoolID = [1, 2, 3]
     numBusses = 10  # set as required
     busSchedule = {}
@@ -54,3 +93,4 @@ if __name__ == '__main__':
 
     busSchedule = construction(numBusses, sij, dj, numbusRequiredPerSchool)
     print(busSchedule)
+    expectedSchedule(busSchedule, pj, dj)
