@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+import os
+import openpyxl
+import matplotlib.pyplot as plt
 
 def indicies(list,searchVal):
     arryIndicies=[]
@@ -82,7 +85,7 @@ def EDDandShortestProcessingTime(numBusses, sij, dj, numbusRequiredPerSchool):
                             setUpTimestr=sij[lastIndexBus][tied_index[ind]]
                             if setUpTimestr=='-':
                                 setUpTimestr=pj[tied_index[ind]]
-                                x = totalTimestr.split('-')
+                                x = setUpTimestr.split('-')
                                 addTotal = 2 * int(np.random.uniform(int(x[0]), int(x[1]), 1))
                             else:
                                 x = setUpTimestr.split('-')
@@ -120,7 +123,8 @@ def EDDandShortestProcessingTime(numBusses, sij, dj, numbusRequiredPerSchool):
     return busSchedule
 
 def expectedSchedule(busSchedule,pj, dj,sij):
-    for i in range(0,10):
+    dictbusNumCmaxLmax={}
+    for i in range(0,1000):
         busScheduleExpTime = {}
         #bus number the Cmax and then the Lmax
         busNumCmaxLmax = []
@@ -150,7 +154,7 @@ def expectedSchedule(busSchedule,pj, dj,sij):
                     processingDist = sij[indexFrom][indexTo]
                     x = processingDist.split('-')
                     samplePj2 = int(np.random.uniform(int(x[0]), int(x[1]), 1))
-                    processingDist = pj[h + 1]
+                    processingDist = pj[indexTo]
                     x = processingDist.split('-')
                     samplePj3 = int(np.random.uniform(int(x[0]), int(x[1]), 1))
                     expTime.append(samplePj3)
@@ -158,26 +162,72 @@ def expectedSchedule(busSchedule,pj, dj,sij):
                 #get the sample by splitting the string from pj
                 #uniform sample
                 if tStart+samplePj2+samplePj3>dj[indexTo]:
-                    Lmax+=tStart+samplePj2+samplePj3-dj[index]
+                    Lmax+=tStart+samplePj2+samplePj3-dj[indexTo]
                 tStart+=samplePj2+samplePj3
             busScheduleExpTime[j]=expTime
             completionTime = sum(expTime)
             busNumCmaxLmax.append(completionTime)
             busNumCmaxLmax.append(Lmax)
             j+=1
-        print(busScheduleExpTime)
-        print(busNumCmaxLmax)
+        #print(busScheduleExpTime)
+        #print(busNumCmaxLmax)
+        dictbusNumCmaxLmax[i]=busNumCmaxLmax
+    return dictbusNumCmaxLmax
 
-
+def map(expSchedule):
+    #get all the Cmax
+    #get all the Lmax
+    completionTime=[]
+    latenessTimes=[]
+    Cmax=[]
+    Lmax=[]
+    for i in range(0,100):
+        arr=expSchedule[i]
+        for j in range (1,len(arr),3):
+            completionTime.append(arr[j])
+        for j in range(2,len(arr),3):
+            latenessTimes.append(arr[j])
+        Cmax.append(max(completionTime))
+        Lmax.append(max(latenessTimes))
+    dfCmax = pd.DataFrame(Cmax, columns=['Cmax Values'])
+    plt.hist(dfCmax)
+    plt.title('Cmax')
+    plt.xlabel('Counts')
+    plt.ylabel('Time')
+    plt.show()
+    dfLmax=pd.DataFrame(Lmax,columns=['Lmax Values'])
+    plt.hist(dfLmax)
+    plt.title('Lmax')
+    plt.xlabel('Counts')
+    plt.ylabel('Time')
+    plt.show()
 
 if __name__ == '__main__':
-    sij = [["-", "12-22", "10-20"], ["9-16", "-", "18-35"], ["10-20", "18-35", "-"]]
-    dj = [100, 130, 130]
-    pj = ["5-9", "7-10", "4-6"]
-    schoolID = [1, 2, 3]
-    numBusses = 10  # set as required
+    xls = pd.ExcelFile(r'C:\Users\sheil\Documents\University4B\MSCI555\Instructor project\data\dataFile.xlsx')
+    sijDF = pd.read_excel(xls, 'S_ij')
+    djDF = pd.read_excel(xls, 'dj')
+    pjDF = pd.read_excel(xls, 'pj')
+    numBusDF = pd.read_excel(xls, 'school')
+    arrsij = sijDF.to_numpy()
+    sij=arrsij[:,1:]
+    #sij = [["-", "12-22", "10-20"], ["9-16", "-", "18-35"], ["10-20", "18-35", "-"]]
+    dj2D=djDF.to_numpy()
+    dj=[]
+    pj=[]
+    for ele in range(0,len(dj2D)):
+        dj.append(dj2D[ele][0])
+    #dj = [100, 130, 130]
+    pj2D=pjDF.to_numpy()
+    for ele in range(0,len(pj2D)):
+        pj.append(pj2D[ele][0])
+    #pj = ["5-9", "7-10", "4-6"]
+    arrschoolID = numBusDF.to_numpy()
+    schoolID = arrschoolID[:, 0]
+    numbusRequiredPerSchool=arrschoolID[:,1]
+    #schoolID = [1, 2, 3]
+    numBusses = 50  # set as required
     busSchedule = {}
-    numbusRequiredPerSchool = [7, 9, 5]
+    #numbusRequiredPerSchool = [7, 9, 5]
     mapIndexOntoSchoolAndRegionID = {}
     for i in range(0, len(sij)):
         mapIndexOntoSchoolAndRegionID[i] = schoolID[i]
@@ -185,5 +235,10 @@ if __name__ == '__main__':
     print(busScheduleEDDSPT)
     busScheduleEDD = construction(numBusses, sij, dj, numbusRequiredPerSchool)
     print(busScheduleEDD)
-    expectedSchedule(busScheduleEDDSPT,pj, dj,sij)
-    expectedSchedule(busScheduleEDD, pj, dj, sij)
+    expScheduleEDDSPT=expectedSchedule(busScheduleEDDSPT,pj, dj,sij)
+    expScheduleEDD=expectedSchedule(busScheduleEDD, pj, dj, sij)
+    print(expScheduleEDDSPT)
+    print(expScheduleEDD)
+    map(expScheduleEDD)
+    map(expScheduleEDDSPT)
+
