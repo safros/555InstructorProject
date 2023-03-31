@@ -124,7 +124,7 @@ def EDDandShortestProcessingTime(numBusses, sij, dj, numbusRequiredPerSchool):
 
 def expectedSchedule(busSchedule,pj, dj,sij):
     dictbusNumCmaxLmax={}
-    for i in range(0,1000):
+    for i in range(0,100):
         busScheduleExpTime = {}
         #bus number the Cmax and then the Lmax
         busNumCmaxLmax = []
@@ -174,7 +174,7 @@ def expectedSchedule(busSchedule,pj, dj,sij):
         dictbusNumCmaxLmax[i]=busNumCmaxLmax
     return dictbusNumCmaxLmax
 
-def map(expSchedule):
+def map(expSchedule, str):
     #get all the Cmax
     #get all the Lmax
     completionTime=[]
@@ -189,15 +189,17 @@ def map(expSchedule):
             latenessTimes.append(arr[j])
         Cmax.append(max(completionTime))
         Lmax.append(max(latenessTimes))
+        completionTime = []
+        latenessTimes = []
     dfCmax = pd.DataFrame(Cmax, columns=['Cmax Values'])
     plt.hist(dfCmax)
-    plt.title('Cmax')
+    plt.title('Cmax'+str)
     plt.xlabel('Counts')
     plt.ylabel('Time')
     plt.show()
     dfLmax=pd.DataFrame(Lmax,columns=['Lmax Values'])
     plt.hist(dfLmax)
-    plt.title('Lmax')
+    plt.title('Lmax'+str)
     plt.xlabel('Counts')
     plt.ylabel('Time')
     plt.show()
@@ -239,6 +241,6 @@ if __name__ == '__main__':
     expScheduleEDD=expectedSchedule(busScheduleEDD, pj, dj, sij)
     print(expScheduleEDDSPT)
     print(expScheduleEDD)
-    map(expScheduleEDD)
-    map(expScheduleEDDSPT)
+    map(expScheduleEDDSPT,"EDD + SPT")
+    map(expScheduleEDD, "EDD")
 
